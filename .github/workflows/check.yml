@@ -1,0 +1,24 @@
+# Проверка сборки для теста режима repo в page2page.
+#
+# Смысл ровно один: дать коммиту статус, по которому бот решает, доехала правка
+# или нет. Красный статус обязан приводить к автоматическому откату.
+#
+# Переключатель для проверки отката: положить в ci-mode.txt слово `fail`.
+name: check
+on: push
+
+jobs:
+  html:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Страница на месте
+        run: grep -q "<h1>" index.html
+      - name: Режим проверки
+        run: |
+          mode="$(tr -d '[:space:]' < ci-mode.txt)"
+          echo "ci-mode: $mode"
+          if [ "$mode" = "fail" ]; then
+            echo "Роняем сборку намеренно — проверяем автоматический откат."
+            exit 1
+          fi
